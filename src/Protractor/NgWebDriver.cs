@@ -5,13 +5,14 @@ using System.Collections.ObjectModel;
 
 using OpenQA.Selenium;
 using OpenQA.Selenium.Internal;
+using OpenQA.Selenium.Support.UI;
 
 namespace Protractor
 {
     /// <summary>
     /// Provides a mechanism to write tests against an AngularJS application.
     /// </summary>
-    public class NgWebDriver : IWebDriver, IWrapsDriver
+    public class NgWebDriver : IWebDriver, IWrapsDriver, IJavaScriptExecutor
     {
         private const string AngularDeferBootstrap = "NG_DEFER_BOOTSTRAP!";
 
@@ -291,11 +292,51 @@ namespace Protractor
 
         #endregion
 
+        #region IJavascripExecutor Members
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="script"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public object ExecuteScript(string script, params object[] args)
+        {
+            var executor = WrappedDriver as IJavaScriptExecutor;
+            if (executor == null)
+            {
+                throw new InvalidOperationException("WebDriver does not implement IJavascriptExecutor: " + WrappedDriver.GetType());
+            }
+            return executor.ExecuteScript(script, args);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="script"></param>
+        /// <param name="args"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public object ExecuteAsyncScript(string script, params object[] args)
+        {
+            var executor = WrappedDriver as IJavaScriptExecutor;
+            if (executor == null)
+            {
+                throw new InvalidOperationException("WebDriver does not implement IJavascriptExecutor: " + WrappedDriver.GetType());
+            }
+            return executor.ExecuteAsyncScript(script, args);
+        }
+        #endregion
+
         internal void WaitForAngular()
         {
             if (!this.IgnoreSynchronization)
             {
-                this.jsExecutor.ExecuteAsyncScript(ClientSideScripts.WaitForAngular, this.rootElement);
+                new WebDriverWait(this.WrappedDriver, new TimeSpan(0, 0, 60)).Until(d =>
+                {
+                    var result = ExecuteScript(ClientSideScripts.WaitForAngularSynchronous, this.RootElement);
+                    return (bool)result;
+                });
             }
         }
     }

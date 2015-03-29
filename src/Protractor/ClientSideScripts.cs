@@ -25,6 +25,22 @@ var callback = arguments[1];
 angular.element(el).injector().get('$browser').notifyWhenNoOutstandingRequests(callback);";
 
         /**
+ * Wait until Angular has finished rendering and has
+ * no outstanding $http calls before continuing.
+ *
+ * arguments[0] {string} The selector housing an ng-app
+ */
+        public const string WaitForAngularSynchronous = @"
+var el = document.querySelector(arguments[0]);
+var result = false;
+var callback = function() {
+    result = true;
+}
+angular.element(el).injector().get('$browser').notifyWhenNoOutstandingRequests(callback);
+return result;
+";
+
+        /**
          * Tests whether the angular global variable is present on a page. 
          * Retries in case the page is just loading slowly.
          *
