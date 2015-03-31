@@ -36,7 +36,16 @@ var result = false;
 var callback = function() {
     result = true;
 }
-angular.element(el).injector().get('$browser').notifyWhenNoOutstandingRequests(callback);
+
+if(!angular) {
+    window['seleniumAngularCount'] = window['seleniumAngularCount'] || 0;
+    window['seleniumAngularCount'] += 1;
+    if(window['seleniumAngularCount'] === 20) {
+        result = true;
+    }
+} else {
+    angular.element(el).injector().get('$browser').notifyWhenNoOutstandingRequests(callback);
+}
 return result;
 ";
 
